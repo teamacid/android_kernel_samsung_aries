@@ -266,6 +266,7 @@ static int fimc_camera_start(struct fimc_control *ctrl)
 		if (ret != -ENOIOCTLCMD)
 			return ret;
 	} else {
+#ifndef CONFIG_SAMSUNG_GALAXYS4G
 		if (vtmode == 1 && device_id != 0 && (ctrl->cap->rotate == 90 || ctrl->cap->rotate == 270)) {
 			ctrl->cam->window.left = 136;
 			ctrl->cam->window.top = 0;
@@ -288,6 +289,15 @@ static int fimc_camera_start(struct fimc_control *ctrl)
 			ctrl->cam->window.width = ctrl->cam->width;
 			ctrl->cam->window.height = ctrl->cam->height;
 		}
+#else
+		ctrl->cam->width = cam_frmsize.discrete.width;
+		ctrl->cam->height = cam_frmsize.discrete.height;
+
+		ctrl->cam->window.left = 0;
+		ctrl->cam->window.top = 0;
+		ctrl->cam->window.width = ctrl->cam->width;
+		ctrl->cam->window.height = ctrl->cam->height;
+#endif
 	}
 
 	cam_ctrl.id = V4L2_CID_CAM_PREVIEW_ONOFF;
@@ -1585,6 +1595,7 @@ int fimc_streamon_capture(void *fh)
 		if(ret != -ENOIOCTLCMD)
 			return ret;
 	} else {
+#ifndef CONFIG_SAMSUNG_GALAXYS4G
 		if (vtmode == 1 && device_id != 0 && (cap->rotate == 90 || cap->rotate == 270)) {
 		ctrl->cam->window.left = 136;
 			ctrl->cam->window.top = 0;//
@@ -1607,6 +1618,12 @@ int fimc_streamon_capture(void *fh)
 			ctrl->cam->width = ctrl->cam->window.width = cam_frmsize.discrete.width;
 			ctrl->cam->height = ctrl->cam->window.height = cam_frmsize.discrete.height;
 		}
+#else
+		ctrl->cam->window.left = 0;
+		ctrl->cam->window.top = 0;
+		ctrl->cam->width = ctrl->cam->window.width = cam_frmsize.discrete.width;
+		ctrl->cam->height = ctrl->cam->window.height = cam_frmsize.discrete.height;
+#endif
 	}
 
 	if (ctrl->id != 2 &&
@@ -1642,12 +1659,12 @@ int fimc_streamon_capture(void *fh)
 			fimc_hwset_output_yuv(ctrl, cap->fmt.pixelformat);
 
 		fimc_hwset_output_size(ctrl, cap->fmt.width, cap->fmt.height);
-
+#ifndef CONFIG_SAMSUNG_GALAXYS4G
 		if ((device_id != 0) && (vtmode != 1)) {
 			ctrl->cap->rotate = 90;
 			dev_err(ctrl->dev, "%s, rotate 90", __func__);
 		}
-
+#endif
 		fimc_hwset_output_scan(ctrl, &cap->fmt);
 		fimc_hwset_output_rot_flip(ctrl, cap->rotate, cap->flip);
 		rot = fimc_mapping_rot_flip(cap->rotate, cap->flip);
